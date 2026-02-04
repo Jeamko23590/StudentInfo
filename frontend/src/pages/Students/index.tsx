@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { studentService, type Student } from '@/services';
 import StudentComponent from '@/components/StudentComponent';
 import StudentModal from '@/components/StudentModal';
+import { ErrorMessage } from '@/components';
 
 const ITEMS_PER_PAGE = 9;
 
@@ -23,7 +24,12 @@ const Students = () => {
         const data = await studentService.getAll();
         setStudents(data);
       } catch (err) {
-        setError('Failed to fetch student data. Please try again later.');
+        // Extract meaningful error message
+        const errorMessage = err instanceof Error 
+          ? err.message 
+          : 'Failed to fetch student data. Please try again later.';
+        
+        setError(errorMessage);
         console.error('Error fetching students:', err);
       } finally {
         setLoading(false);
@@ -91,57 +97,38 @@ const Students = () => {
     return pages;
   };
 
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Fetch students from API service
-        const data = await studentService.getAll();
-        setStudents(data);
-      } catch (err) {
-        setError('Failed to fetch student data. Please try again later.');
-        console.error('Error fetching students:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch students from API service
+      const data = await studentService.getAll();
+      setStudents(data);
+    } catch (err) {
+      // Extract meaningful error message
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : 'Failed to fetch student data. Please try again later.';
+      
+      setError(errorMessage);
+      console.error('Error fetching students:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchStudents();
-  }, [setLoading]);
+  }, []);
 
   if (error) {
     return (
-      <div className="min-h-[calc(100vh-80px)] bg-gray-50 flex items-center justify-center px-6">
-        <div className="max-w-md w-full">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 text-center border border-red-100">
-            <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg 
-                className="w-10 h-10 text-white" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
-                />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-3">Oops! Something went wrong</h3>
-            <p className="text-gray-600 mb-6">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      </div>
+      <ErrorMessage 
+        message={error}
+        onRetry={fetchStudents}
+        onGoHome={() => window.location.href = '/'}
+      />
     );
   }
 
