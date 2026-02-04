@@ -12,30 +12,26 @@ const Students = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+
+  const fetchStudents = async () => {
+    try {
+      setError(null);
+      
+      // Fetch students from API service
+      const data = await studentService.getAll();
+      setStudents(data);
+    } catch (err) {
+      // Extract meaningful error message
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : 'Failed to fetch student data. Please try again later.';
+      
+      setError(errorMessage);
+      console.error('Error fetching students:', err);
+    }
+  };
 
   useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Fetch students from API service
-        const data = await studentService.getAll();
-        setStudents(data);
-      } catch (err) {
-        // Extract meaningful error message
-        const errorMessage = err instanceof Error 
-          ? err.message 
-          : 'Failed to fetch student data. Please try again later.';
-        
-        setError(errorMessage);
-        console.error('Error fetching students:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchStudents();
   }, []);
 
@@ -96,31 +92,6 @@ const Students = () => {
     
     return pages;
   };
-
-  const fetchStudents = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Fetch students from API service
-      const data = await studentService.getAll();
-      setStudents(data);
-    } catch (err) {
-      // Extract meaningful error message
-      const errorMessage = err instanceof Error 
-        ? err.message 
-        : 'Failed to fetch student data. Please try again later.';
-      
-      setError(errorMessage);
-      console.error('Error fetching students:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchStudents();
-  }, []);
 
   if (error) {
     return (

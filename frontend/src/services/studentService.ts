@@ -19,12 +19,15 @@ export interface Student {
 }
 
 export class StudentServiceError extends Error {
+  public originalError?: unknown;
+  
   constructor(
     message: string,
-    public originalError?: unknown
+    originalError?: unknown
   ) {
     super(message);
     this.name = 'StudentServiceError';
+    this.originalError = originalError;
   }
 }
 
@@ -82,7 +85,7 @@ export const studentService = {
       
       return students;
     } catch (error) {
-      handleApiError(error, 'fetch students');
+      return handleApiError(error, 'fetch students');
     }
   },
 
@@ -100,7 +103,7 @@ export const studentService = {
         year: Math.floor(Math.random() * 4) + 1,
       };
     } catch (error) {
-      handleApiError(error, `fetch student with ID ${id}`);
+      return handleApiError(error, `fetch student with ID ${id}`);
     }
   },
 };
